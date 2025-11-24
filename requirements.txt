@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+langchain
+langchain-community
+langchain-huggingface
+langchain-ollama
+langchain-text-splitters
+faiss-cpu
+sentence-transformers
+beautifulsoup4
+slowapi
+mlflow-skinny
+prometheus-fastapi-instrumentator
+alembic
+cryptography

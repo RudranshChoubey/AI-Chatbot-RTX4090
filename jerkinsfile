@@ -1,0 +1,49 @@
+pipeline {
+    agent any 
+    
+    environment {
+        DOCKER_CREDS = credentials('your-dockerhub-creds-id') 
+        DOCKER_IMAGE = "YOUR_USERNAME/rtx-assistant"
+        DOCKER_TAG = "v${env.BUILD_NUMBER}"
+        KUBE_CONFIG = credentials('your-kubeconfig-id') 
+    }
+    
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                echo "Logging in to Docker Hub..."
+                sh "echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin"
+                echo "Pushing image..."
+                sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            }
+        }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo "Deploying to Kubernetes..."
+                
+                withKubeConfig([credentialsId: 'your-kubeconfig-id']) {
+                    
+                    sh "sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${DOCKER_TAG}|' k8s-deployment.yaml"
+                    
+                    
+                    sh "kubectl apply -f k8s-deployment.yaml"
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo "CI/CD Pipeline finished."
+            sh "docker logout"
+        }
+    }
+}

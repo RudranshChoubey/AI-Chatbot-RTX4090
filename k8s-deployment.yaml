@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtx-assistant-deployment
+spec:
+  replicas: 2  
+  selector:
+    matchLabels:
+      app: rtx-assistant
+  template:
+    metadata:
+      labels:
+        app: rtx-assistant
+    spec:
+      containers:
+      - name: rtx-assistant-api
+        image: YOUR_USERNAME/rtx-assistant:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rtx-assistant-service
+spec:
+  type: LoadBalancer  
+  selector:
+    app: rtx-assistant
+  ports:
+  - protocol: TCP
+    port: 80        
+    targetPort: 8000 
